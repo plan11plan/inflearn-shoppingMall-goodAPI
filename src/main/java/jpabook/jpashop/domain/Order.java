@@ -25,7 +25,7 @@ public class Order {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
-    private Member member;
+    private Member member; //LAZY면 프록시객체 넣어둠
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();

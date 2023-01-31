@@ -48,6 +48,7 @@ public class OrderApiController {
     private final OrderQueryRepository orderQueryRepository;
 
     /**
+     *
      * V1. 엔티티 직접 노출
      * - Hibernate5Module 모듈 등록, LAZY=null 처리
      * - 양방향 관계 문제 발생 -> @JsonIgnore
@@ -74,8 +75,12 @@ public class OrderApiController {
         return result;
     }
 
+    /**
+     * 뻥튀기(중복)  문제 발생.
+     */
     @GetMapping("/api/v3/orders")
     public List<OrderDto> ordersV3() {
+        //orderRepository에 메서드 하나 만들겠습니다. fetch join 하겠다는 뜻이에요.
         List<Order> orders = orderRepository.findAllWithItem();
         List<OrderDto> result = orders.stream()
                 .map(o -> new OrderDto(o))
@@ -86,8 +91,11 @@ public class OrderApiController {
 
     /**
      * V3.1 엔티티를 조회해서 DTO로 변환 페이징 고려
-     * - ToOne 관계만 우선 모두 페치 조인으로 최적화
-     * - 컬렉션 관계는 hibernate.default_batch_fetch_size, @BatchSize로 최적화
+         * - ToOne 관계만 우선 모두 페치 조인으로 최적화
+         * - 컬렉션 관계는 hibernate.default_batch_fetch_size, @BatchSize로 최적화
+     * 
+     * 전체를 가져와서 필요한 부분(DTO) 반환
+     * V4는  DTO를 가져와서 DTO로 반환
      */
     @GetMapping("/api/v3.1/orders")
     public List<OrderDto> ordersV3_page(@RequestParam(value = "offset", defaultValue = "0") int offset,
@@ -95,7 +103,8 @@ public class OrderApiController {
 
         List<Order> orders = orderRepository.findAllWithMemberDelivery(offset, limit);
         List<OrderDto> result = orders.stream()
-                .map(o -> new OrderDto(o))
+                .map(o -> new OrderDto(o)) //orderDto가 루프를 돌면서  orderItems 꺼내옵니다. 지연로딩 된게 프록시 초기화되면서
+                //orderItems들을 가져옵니다.
                 .collect(toList());
 
         return result;

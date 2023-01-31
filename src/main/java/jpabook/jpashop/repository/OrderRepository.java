@@ -101,7 +101,7 @@ public class OrderRepository {
         return query.getResultList();
     }
 
-    public List<Order> findAllWithMemberDelivery() {
+    public List<Order> findAllWithMemberDelivery() { //  Order 가져올 때 Member, Delivery
         return em.createQuery(
                 "select o from Order o" +
                         " join fetch o.member m" +

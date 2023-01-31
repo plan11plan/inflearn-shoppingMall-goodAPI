@@ -24,6 +24,7 @@ import static java.util.stream.Collectors.toList;
  * Order -> Delivery
  *
  */
+// Member, Delivery 만 가져오는게 목표
 @RestController
 @RequiredArgsConstructor
 public class OrderSimpleApiController {
@@ -37,19 +38,20 @@ public class OrderSimpleApiController {
      * - 양방향 관계 문제 발생 -> @JsonIgnore
      */
 
-    @GetMapping("/api/v1/simple-orders")
+    @GetMapping("/api/v1/simple-orders") //도메인 직접 노출. 전체 조회
     public List<Order> ordersV1() {
         List<Order> all = orderRepository.findAllByString(new OrderSearch()); //회원 이름, 주문상태
         for (Order order : all) {
-            order.getMember().getName(); //Lazy 강제 초기화
-            order.getDelivery().getAddress(); //Lazy 강제 초기화
+            order.getMember().getName(); //Lazy 강제 초기화 , order.getMember()까지는 프록시 객체
+            order.getDelivery().getAddress(); //Lazy 강제 초기화 , order.getDelivery()까지는 프록시 객체
+            //그냥..DTO 쓰자 ...
         }
         return all;
     }
 
     /**
      * V2. 엔티티를 조회해서 DTO로 변환(fetch join 사용X)
-     * - 단점: 지연로딩으로 쿼리 N번 호출
+     * DTO 사용! 그러나..... - 단점: 지연로딩으로 쿼리 N번 호출
      */
     @GetMapping("/api/v2/simple-orders")
     public List<SimpleOrderDto> ordersV2() {
@@ -75,6 +77,10 @@ public class OrderSimpleApiController {
         return result;
     }
 
+    /**
+     * JPA 에서 DTO 로 바로 조회 !!
+     *  하지만 이건 비추천
+     */
     @GetMapping("/api/v4/simple-orders")
     public List<OrderSimpleQueryDto> ordersV4() {
         return orderSimpleQueryRepository.findOrderDtos();
